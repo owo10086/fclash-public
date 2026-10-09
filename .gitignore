@@ -1,0 +1,11 @@
+.DS_Store
+__pycache__/
+*.pyc
+.dart_tool/
+.flutter-plugins*
+build/
+dist/
+.build-provenance.json
+.verified-build.json
+*.log
+*.log.gz

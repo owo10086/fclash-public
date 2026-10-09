@@ -1,0 +1,10 @@
+The generic client source originates from FlClash:
+https://github.com/chen08209/FlClash
+
+This snapshot includes subsequent modifications. Existing copyright notices
+in individual source files are retained. See LICENSE for GPL-3.0 terms.
+
+The complete application also incorporates separately maintained components.
+Those components and their corresponding license notices remain part of the
+complete source and distribution. This public snapshot is a partial source
+distribution and does not replace the complete corresponding source.

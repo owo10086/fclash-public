@@ -1,0 +1,163 @@
+name: build
+
+on:
+  workflow_dispatch:
+    inputs:
+      private_ref:
+        description: '私有源码的分支、标签或提交'
+        required: true
+        type: string
+      brand:
+        description: '私有配置中的品牌标识；all 表示全部品牌'
+        required: true
+        type: string
+      target:
+        description: '构建平台'
+        required: true
+        default: default-platforms
+        type: choice
+        options: [default-platforms, windows-amd64, macos-amd64, macos-arm64]
+      publish_release:
+        description: '在私有仓库正式发布；关闭时保留私有草稿'
+        default: false
+        type: boolean
+      preflight_only:
+        description: '只检查源码、平台工具和私有读写，跳过客户端编译'
+        default: false
+        type: boolean
+      release_tag:
+        description: '私有 Release 标签；留空使用 v 加项目版本'
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+# Different brands can contribute to the same version, but release preparation
+# and asset replacement must not race across separate workflow runs.
+concurrency:
+  group: private-client-releases
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: private-build
+    outputs:
+      matrix: ${{ steps.prepare.outputs.matrix }}
+      private_sha: ${{ steps.prepare.outputs.private_sha }}
+      release_tag: ${{ steps.prepare.outputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify sources and prepare private draft
+        id: prepare
+        env:
+          PRIVATE_SOURCE_REPOSITORY: ${{ vars.PRIVATE_SOURCE_REPOSITORY }}
+          PRIVATE_CORE_REPOSITORY: ${{ vars.PRIVATE_CORE_REPOSITORY }}
+          PRIVATE_REPO_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
+          CORE_REPO_TOKEN: ${{ secrets.CORE_REPO_TOKEN }}
+          PRIVATE_SOURCE_REF: ${{ inputs.private_ref }}
+          BUILD_BRAND: ${{ inputs.brand }}
+          BUILD_TARGET: ${{ inputs.target }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          PREFLIGHT_ONLY: ${{ inputs.preflight_only }}
+          PUBLISH_RELEASE: ${{ inputs.publish_release }}
+        run: python ci/pipeline.py prepare
+
+  preflight:
+    needs: prepare
+    runs-on: ${{ matrix.os }}
+    environment: private-build
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check sources, platform tools and private readback
+        env:
+          PRIVATE_SOURCE_REPOSITORY: ${{ vars.PRIVATE_SOURCE_REPOSITORY }}
+          PRIVATE_CORE_REPOSITORY: ${{ vars.PRIVATE_CORE_REPOSITORY }}
+          PRIVATE_REPO_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
+          CORE_REPO_TOKEN: ${{ secrets.CORE_REPO_TOKEN }}
+          PRIVATE_SOURCE_SHA: ${{ needs.prepare.outputs.private_sha }}
+          PRIVATE_SOURCE_REF: ${{ inputs.private_ref }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
+          BUILD_BRAND: ${{ matrix.brand }}
+          BUILD_PLATFORM: ${{ matrix.platform }}
+          BUILD_ARCH: ${{ matrix.arch }}
+        run: python ci/pipeline.py preflight
+
+  build:
+    needs: [prepare, preflight]
+    if: ${{ !inputs.preflight_only }}
+    runs-on: ${{ matrix.os }}
+    environment: private-build
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix: ${{ fromJson(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.0'
+          cache: false
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.41.6'
+          cache: false
+      - name: Assemble, build, verify and upload privately
+        env:
+          PRIVATE_SOURCE_REPOSITORY: ${{ vars.PRIVATE_SOURCE_REPOSITORY }}
+          PRIVATE_CORE_REPOSITORY: ${{ vars.PRIVATE_CORE_REPOSITORY }}
+          PRIVATE_REPO_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
+          CORE_REPO_TOKEN: ${{ secrets.CORE_REPO_TOKEN }}
+          PRIVATE_SOURCE_SHA: ${{ needs.prepare.outputs.private_sha }}
+          PRIVATE_SOURCE_REF: ${{ inputs.private_ref }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
+          BUILD_BRAND: ${{ matrix.brand }}
+          BUILD_PLATFORM: ${{ matrix.platform }}
+          BUILD_ARCH: ${{ matrix.arch }}
+        run: python ci/pipeline.py build
+
+  finalize:
+    needs: [prepare, build]
+    if: ${{ !inputs.preflight_only }}
+    runs-on: ubuntu-latest
+    environment: private-build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify selected assets and finish private release
+        env:
+          PRIVATE_SOURCE_REPOSITORY: ${{ vars.PRIVATE_SOURCE_REPOSITORY }}
+          PRIVATE_CORE_REPOSITORY: ${{ vars.PRIVATE_CORE_REPOSITORY }}
+          PRIVATE_REPO_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
+          PRIVATE_SOURCE_SHA: ${{ needs.prepare.outputs.private_sha }}
+          PRIVATE_SOURCE_REF: ${{ inputs.private_ref }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.release_tag }}
+          BUILD_MATRIX: ${{ needs.prepare.outputs.matrix }}
+          PUBLISH_RELEASE: ${{ inputs.publish_release }}
+        run: python ci/pipeline.py finalize
