@@ -155,11 +155,11 @@
     },
     {
       "path": "lib/views/proxies/card.dart",
-      "sha256": "2712ea058b23b4cd05e95319d7e6c5c2e32481e073bf102ccc4f53a56c85630a"
+      "sha256": "f00f2e0966a9afa80a4500ab9b4cc28d74d85d5e2ce2f5b22e39a80b69b1260a"
     },
     {
       "path": "lib/views/proxies/list.dart",
-      "sha256": "488c5da81581877f65641aaa5da19700d8c7456930e178167f0f1df65935927d"
+      "sha256": "e0c824dc8f5dc612c03300496d742d5424d6d14e293beaad59e5a997aeccc0f9"
     },
     {
       "path": "lib/views/proxies/setting.dart",
@@ -167,7 +167,7 @@
     },
     {
       "path": "lib/views/proxies/tab.dart",
-      "sha256": "fb257bff46ab16cb3022d1a6176b20fd37d9960561fe01f3e7478dc1ef3482f9"
+      "sha256": "0f7775050520afdb425469efa7b9bcf697a7a48b591da70cef33637ca5bfdd18"
     },
     {
       "path": "lib/widgets/activate_box.dart",
@@ -243,7 +243,7 @@
     },
     {
       "path": "lib/widgets/keep_scope.dart",
-      "sha256": "6dabafe7dfe9bb8eeb8661b211ad15fd3f0ca0ae997e9a42fc6cc823a544a06e"
+      "sha256": "f36035e879edb91b5a282f003944ba83359bbb51fc253fd7e74f3471ecd77476"
     },
     {
       "path": "lib/widgets/line_chart.dart",
@@ -295,7 +295,7 @@
     },
     {
       "path": "lib/widgets/text.dart",
-      "sha256": "552ac907171251438b2d76bb163f83a9ee15c8d5920e57e1ef0d6eef37c973c2"
+      "sha256": "7466b2c151deb939f7e8c765d20dff83d0169101cfbedc51733b3936360a90dc"
     },
     {
       "path": "lib/widgets/theme.dart",
@@ -307,7 +307,7 @@
     },
     {
       "path": "pubspec.yaml",
-      "sha256": "ed1baa9cd3d71c3c7a19608b4c61a54f31c1126c5b09a1a50fa18d7498599e1a"
+      "sha256": "782858438daaa7134aa3ee9e655688cccb5be0f4a109a7f9b15aa4a1bee8f897"
     }
   ]
 }

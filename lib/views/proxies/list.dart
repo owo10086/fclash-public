@@ -17,14 +17,14 @@ import 'common.dart';
 
 typedef GroupNameProxiesMap = Map<String, List<Proxy>>;
 
-class ProxiesListView extends StatefulWidget {
+class ProxiesListView extends ConsumerStatefulWidget {
   const ProxiesListView({super.key});
 
   @override
-  State<ProxiesListView> createState() => _ProxiesListViewState();
+  ConsumerState<ProxiesListView> createState() => ProxiesListViewState();
 }
 
-class _ProxiesListViewState extends State<ProxiesListView> {
+class ProxiesListViewState extends ConsumerState<ProxiesListView> {
   final _controller = ScrollController();
   final _headerStateNotifier = ValueNotifier<ProxiesListHeaderSelectorState?>(
     null,
@@ -33,6 +33,34 @@ class _ProxiesListViewState extends State<ProxiesListView> {
   double containerHeight = 0;
   int _columns = 2;
   List<Group> _groups = [];
+
+  Group? get _visibleGroup {
+    if (_groups.isEmpty) return null;
+    final index = (_headerStateNotifier.value?.currentIndex ?? 0).clamp(
+      0,
+      _groups.length - 1,
+    );
+    return _groups[index];
+  }
+
+  Future<void> delayTestCurrentGroup() async {
+    final group = _visibleGroup;
+    if (group == null) return;
+    final query = ref.read(queryProvider(QueryTag.proxies));
+    await delayTest(
+      proxySearchTargets(
+        ref.read(currentGroupsStateProvider).value,
+        group.name,
+        query,
+      ),
+      group.testUrl,
+    );
+  }
+
+  void scrollToGroupSelected() {
+    final group = _visibleGroup;
+    if (group != null) _scrollToGroupSelected(group.name);
+  }
 
   @override
   void initState() {
@@ -618,7 +646,10 @@ class _ListHeaderState extends ConsumerState<ListHeader> {
                 IconButton.filledTonal(
                   padding: const EdgeInsets.all(10),
                   iconSize: 22,
-                  style: IconButton.styleFrom(minimumSize: const Size(44, 44)),
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size(44, 44),
+                    maximumSize: isAndroidUi ? Size.infinite : null,
+                  ),
                   onPressed: () {
                     _handleChange(groupName);
                   },

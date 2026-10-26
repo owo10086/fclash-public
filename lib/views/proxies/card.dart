@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/controller.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -5,6 +6,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/proxies/common.dart';
+import 'package:fl_clash/views/proxies/selection_scope.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,7 +43,7 @@ class ProxyCard extends StatelessWidget {
             getDelayProvider(proxyName: proxy.name, testUrl: testUrl),
           );
           return FadeThroughBox(
-            alignment: type == ProxyCardType.expand
+            alignment: !isAndroidUi && type == ProxyCardType.expand
                 ? Alignment.centerLeft
                 : Alignment.centerRight,
             child: delay == 0 || delay == null
@@ -60,7 +62,11 @@ class ProxyCard extends StatelessWidget {
                 : GestureDetector(
                     onTap: _handleTestCurrentDelay,
                     child: Text(
-                      delay > 0 ? '$delay ms' : 'Timeout',
+                      delay > 0
+                          ? '$delay ms'
+                          : isAndroidUi
+                          ? '超时'
+                          : 'Timeout',
                       style: context.textTheme.labelSmall?.copyWith(
                         overflow: TextOverflow.ellipsis,
                         color: utils.getDelayColor(delay),
@@ -143,7 +149,111 @@ class ProxyCard extends StatelessWidget {
     );
   }
 
-  Future<void> _changeProxy(WidgetRef ref) async {
+  Widget _buildAndroidContent(BuildContext context, Widget delayText) {
+    final showType =
+        GroupType.values.any((type) => type.name == proxy.type) ||
+        [
+          'Direct',
+          'Reject',
+          'RejectDrop',
+          'Pass',
+          'Compatible',
+        ].contains(proxy.type);
+    final nameStyle = getProxyCardNameStyle(
+      context,
+    )?.copyWith(color: context.appColors.primaryText);
+    final secondStyle = context.textTheme.bodySmall?.copyWith(
+      color: context.appColors.primaryText,
+    );
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: proxyCardMinVerticalPadding,
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final markWidth = groupType.isComputedSelected ? 24.0 : 0.0;
+          final painter = TextPainter(
+            text: EmojiText(proxy.name, style: nameStyle).textSpan,
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+          )..layout(maxWidth: max(0, constraints.maxWidth - markWidth));
+          final end = showType
+              ? proxy.name.length
+              : painter.getLineBoundary(const TextPosition(offset: 0)).end;
+          painter.dispose();
+          // 测量与实际渲染使用相同的 Emoji 字体，避免切开国旗或倍率说明。
+          final first = proxy.name.substring(0, end).trimRight();
+          final rest = proxy.name.substring(end).trimLeft();
+          final delayPainter = TextPainter(
+            text: TextSpan(
+              text: '${httpTimeoutDuration.inMilliseconds} ms',
+              style: context.textTheme.labelSmall,
+            ),
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+          )..layout();
+          final numericWidth = delayPainter.width;
+          delayPainter.text = TextSpan(
+            text: '超时',
+            style: context.textTheme.labelSmall,
+          );
+          delayPainter.layout();
+          final delayWidth =
+              (max(numericWidth, delayPainter.width).ceilToDouble() + 2).clamp(
+                0.0,
+                (constraints.maxWidth - 4).clamp(0.0, double.infinity),
+              );
+          delayPainter.dispose();
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: getProxyCardNameHeight(),
+                child: Padding(
+                  padding: EdgeInsets.only(right: markWidth),
+                  child: EmojiText(
+                    first,
+                    style: nameStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const SizedBox(height: proxyCardCompactContentSpacing),
+              SizedBox(
+                height: getProxyCardCompactInfoHeight(),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: showType
+                          ? _buildProxyTypeText(context)
+                          : EmojiText(
+                              rest,
+                              style: secondStyle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                    ),
+                    const SizedBox(width: 4),
+                    SizedBox(
+                      width: delayWidth,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: delayText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _changeProxy(BuildContext context, WidgetRef ref) async {
     final isComputedSelected = groupType.isComputedSelected;
     final isSelector = groupType == GroupType.Selector;
     if (isComputedSelected || isSelector) {
@@ -152,7 +262,12 @@ class ProxyCard extends StatelessWidget {
         true => currentProxyName == proxy.name ? '' : proxy.name,
         false => proxy.name,
       };
-      appController.changeProxyDebounce(groupName, nextProxyName);
+      final scope = ProxySelectionScope.of(context);
+      if (scope != null) {
+        await scope.onSelect(groupName, nextProxyName);
+      } else {
+        await appController.changeProxyDebounce(groupName, nextProxyName);
+      }
       return;
     }
     globalState.showNotifier(appLocalizations.notSelectedTip);
@@ -163,7 +278,9 @@ class ProxyCard extends StatelessWidget {
     final measure = globalState.measure;
     final delayText = _buildDelayText();
     final proxyNameText = _buildProxyNameText(context);
-    final child = type == ProxyCardType.min
+    final child = isAndroidUi
+        ? _buildAndroidContent(context, delayText)
+        : type == ProxyCardType.min
         ? _buildCompactContent(context, delayText)
         : Container(
             alignment: Alignment.centerLeft,
@@ -208,7 +325,7 @@ class ProxyCard extends StatelessWidget {
             return CommonCard(
               key: key,
               onPressed: () {
-                _changeProxy(ref);
+                _changeProxy(context, ref);
               },
               radius: AppRadius.input,
               isSelected: selectedProxyName == proxy.name,

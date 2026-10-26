@@ -13,8 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'card.dart';
 import 'common.dart';
 
-typedef ProxyGroupViewKeyMap =
-    Map<String, GlobalObjectKey<_ProxyGroupViewState>>;
+typedef ProxyGroupViewKeyMap = Map<String, GlobalKey<_ProxyGroupViewState>>;
 
 class ProxiesTabView extends ConsumerStatefulWidget {
   const ProxiesTabView({super.key});
@@ -29,7 +28,7 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
     with TickerProviderStateMixin {
   TabController? _tabController;
   final _hasMoreButtonNotifier = ValueNotifier<bool>(false);
-  ProxyGroupViewKeyMap _keyMap = {};
+  final ProxyGroupViewKeyMap _keyMap = {};
 
   @override
   void initState() {
@@ -197,7 +196,9 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
         label: appLocalizations.nullTip(appLocalizations.proxies),
       );
     }
-    _keyMap = {};
+    _keyMap.removeWhere(
+      (name, _) => !groups.any((group) => group.name == name),
+    );
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +272,7 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
                 ProxyGroupView(
                   key: _keyMap.updateCacheValue(
                     group.name,
-                    () => GlobalObjectKey<_ProxyGroupViewState>(group.name),
+                    () => GlobalKey<_ProxyGroupViewState>(),
                   ),
                   group: group,
                   columns: state.columns,
@@ -408,62 +409,66 @@ class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
 }
 
 class DelayTestButton extends StatefulWidget {
-  final Future Function() onClick;
+  final Future<void> Function() onClick;
+  final bool compact;
 
-  const DelayTestButton({super.key, required this.onClick});
+  const DelayTestButton({
+    super.key,
+    required this.onClick,
+    this.compact = false,
+  });
 
   @override
   State<DelayTestButton> createState() => _DelayTestButtonState();
 }
 
-class _DelayTestButtonState extends State<DelayTestButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+class _DelayTestButtonState extends State<DelayTestButton> {
+  bool _isTesting = false;
 
   Future<void> _healthcheck() async {
-    if (_controller.isAnimating) {
-      return;
+    if (_isTesting) return;
+    setState(() => _isTesting = true);
+    try {
+      await widget.onClick();
+    } finally {
+      if (mounted) setState(() => _isTesting = false);
     }
-    _controller.forward();
-    await widget.onClick();
-    if (mounted) {
-      _controller.reverse();
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-    _animation = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOutBack),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller.view,
-      builder: (_, child) {
-        return FadeTransition(
-          opacity: _animation,
-          child: ScaleTransition(scale: _animation, child: child),
-        );
-      },
-      child: CommonFloatingActionButton(
-        onPressed: _healthcheck,
-        label: appLocalizations.delayTest,
-        icon: const Icon(Icons.network_ping),
+    final icon = _isTesting
+        ? const SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 1.5),
+          )
+        : Icon(isAndroidUi ? Icons.bolt : Icons.network_ping, size: 18);
+    if (widget.compact) {
+      return IconButton(
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+        tooltip: appLocalizations.delayTest,
+        onPressed: _isTesting ? null : _healthcheck,
+        icon: icon,
+      );
+    }
+    return Tooltip(
+      message: appLocalizations.delayTest,
+      child: TextButton.icon(
+        onPressed: _isTesting ? null : _healthcheck,
+        icon: icon,
+        label: Text(
+          appLocalizations.delayTest,
+          style: AppTextStyles.caption1Style,
+        ),
+        style: TextButton.styleFrom(
+          minimumSize: const Size(44, 44),
+          padding: EdgeInsets.symmetric(
+            horizontal: isAndroidUi ? 8 : 12,
+            vertical: 8,
+          ),
+          foregroundColor: context.appColors.primaryText,
+        ),
       ),
     );
   }

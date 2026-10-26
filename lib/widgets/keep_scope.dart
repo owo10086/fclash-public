@@ -4,11 +4,7 @@ class KeepScope extends StatefulWidget {
   final Widget child;
   final bool keep;
 
-  const KeepScope({
-    super.key,
-    required this.child,
-    this.keep = true,
-  });
+  const KeepScope({super.key, required this.child, this.keep = true});
 
   @override
   State<KeepScope> createState() => _KeepContainerState();
@@ -16,6 +12,12 @@ class KeepScope extends StatefulWidget {
 
 class _KeepContainerState extends State<KeepScope>
     with AutomaticKeepAliveClientMixin {
+  @override
+  void didUpdateWidget(KeepScope oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.keep != widget.keep) updateKeepAlive();
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
