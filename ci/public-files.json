@@ -115,7 +115,7 @@
     },
     {
       "path": "lib/views/config/general.dart",
-      "sha256": "2139233dd5771af9710e15d304f9916bfcd709d234d3eb80c788e2fc5b930ffe"
+      "sha256": "d9c79c567630a227e0ffcc5a98a8a0712b50f31da29d0b996d7770b70c151d6a"
     },
     {
       "path": "lib/views/config/network.dart",
@@ -307,7 +307,7 @@
     },
     {
       "path": "pubspec.yaml",
-      "sha256": "782858438daaa7134aa3ee9e655688cccb5be0f4a109a7f9b15aa4a1bee8f897"
+      "sha256": "eed65b97d7d393d63fcc95dbee5a349822036d3d0c615574335c2fdbe8cea20a"
     }
   ]
 }
