@@ -136,6 +136,10 @@ jobs:
           BUILD_BRAND: ${{ matrix.brand }}
           BUILD_PLATFORM: ${{ matrix.platform }}
           BUILD_ARCH: ${{ matrix.arch }}
+          DIAGNOSTICS_WEBDAV_ENDPOINT: ${{ secrets.DIAGNOSTICS_WEBDAV_ENDPOINT }}
+          DIAGNOSTICS_WEBDAV_USERNAME: ${{ secrets.DIAGNOSTICS_WEBDAV_USERNAME }}
+          DIAGNOSTICS_WEBDAV_PASSWORD: ${{ secrets.DIAGNOSTICS_WEBDAV_PASSWORD }}
+          DIAGNOSTICS_WEBDAV_VALIDATED: ${{ secrets.DIAGNOSTICS_WEBDAV_VALIDATED }}
         run: python ci/pipeline.py build
 
   finalize:
