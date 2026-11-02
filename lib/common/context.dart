@@ -10,10 +10,13 @@ extension BuildContextExtension on BuildContext {
     return findAncestorStateOfType<CommonScaffoldState>();
   }
 
-  void showNotifier(String text, {MessageActionState? actionState}) {
+  void showNotifier(
+    String text, {
+    List<MessageActionState> actions = const [],
+  }) {
     return findAncestorStateOfType<StatusManagerState>()?.message(
       text,
-      actionState: actionState,
+      actions: actions,
     );
   }
 
