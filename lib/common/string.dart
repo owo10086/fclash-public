@@ -46,6 +46,11 @@ extension StringExtension on String {
     return bom + byteData.buffer.asUint8List();
   }
 
+  List<int> get encodeUtf8WithBom {
+    final bom = [0xEF, 0xBB, 0xBF];
+    return bom + utf8.encode(this);
+  }
+
   Uint8List? get getBase64 {
     final regExp = RegExp(r'base64,(.*)');
     final match = regExp.firstMatch(this);

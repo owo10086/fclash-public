@@ -71,7 +71,7 @@
     },
     {
       "path": "lib/common/string.dart",
-      "sha256": "04deaa68b62dca67e6c2a4c49ea56abbfa998c8821abec8155453220e8c5e08b"
+      "sha256": "bf78f57e24494d65fd6cd9975321064cc4e42534fb11ff3a3a7a6b21b1f30f65"
     },
     {
       "path": "lib/common/text.dart",
