@@ -11,7 +11,7 @@
     },
     {
       "path": "lib/common/app_theme.dart",
-      "sha256": "944cf26436b1e74924b30f7b3e83c3bd9036b9f2ae652cb7f77d2a87ca56c89f"
+      "sha256": "295d0967f1a68e14c69f7d46280a5f28196b6adb4d8149599d53e55d4f5cc2fd"
     },
     {
       "path": "lib/common/color.dart",
@@ -155,7 +155,7 @@
     },
     {
       "path": "lib/views/proxies/card.dart",
-      "sha256": "f00f2e0966a9afa80a4500ab9b4cc28d74d85d5e2ce2f5b22e39a80b69b1260a"
+      "sha256": "d352872710861fc9344d28b65287a660ee8b98241544a03d21585bb5f674163b"
     },
     {
       "path": "lib/views/proxies/list.dart",
@@ -167,7 +167,7 @@
     },
     {
       "path": "lib/views/proxies/tab.dart",
-      "sha256": "0f7775050520afdb425469efa7b9bcf697a7a48b591da70cef33637ca5bfdd18"
+      "sha256": "93ef934ab10406f1d9b59069a09de0c9f3f5eaec0d9e4533433964b276e951b4"
     },
     {
       "path": "lib/widgets/activate_box.dart",
@@ -307,7 +307,7 @@
     },
     {
       "path": "pubspec.yaml",
-      "sha256": "eed65b97d7d393d63fcc95dbee5a349822036d3d0c615574335c2fdbe8cea20a"
+      "sha256": "0906fc33902e4eb1f68237c9f293a52d66c7038a490a84629d220414c170dde4"
     }
   ]
 }

@@ -96,6 +96,28 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
 }
 
 abstract class AppThemePalette {
+  static AppSemanticColors desktopColors(
+    Brightness brightness,
+    AppSemanticColors base,
+  ) {
+    final dark = brightness == Brightness.dark;
+    return base.copyWith(
+      canvas: dark ? const Color(0xFF12151B) : const Color(0xFFEEF1F6),
+      surface: dark ? const Color(0xFF171A21) : const Color(0xFFF7F8FB),
+      surfaceElevated: dark ? const Color(0xFF1B1F27) : Colors.white,
+      primaryText: dark ? const Color(0xFFE9EDF4) : const Color(0xFF1D2330),
+      secondaryText: dark ? const Color(0xFFA3ABBA) : const Color(0xFF5B6474),
+      tertiaryText: dark ? const Color(0xFF6B7383) : const Color(0xFF9AA2B1),
+      divider: dark ? const Color(0xFF2A2F3A) : const Color(0xFFE6E9EF),
+      accent: dark ? const Color(0xFF5B8CFF) : const Color(0xFF2F6BFF),
+    );
+  }
+
+  static Color desktopSelection(Brightness brightness) =>
+      brightness == Brightness.dark
+      ? const Color(0xFF23304D)
+      : const Color(0xFFE8EFFF);
+
   static const light = AppSemanticColors(
     canvas: Color(0xFFF2F2F7),
     surface: Color(0xFFFFFFFF),

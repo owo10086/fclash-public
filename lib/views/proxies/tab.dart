@@ -13,7 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'card.dart';
 import 'common.dart';
 
-typedef ProxyGroupViewKeyMap = Map<String, GlobalKey<_ProxyGroupViewState>>;
+typedef ProxyGroupViewKeyMap = Map<String, GlobalKey<ProxyGroupViewState>>;
 
 class ProxiesTabView extends ConsumerStatefulWidget {
   const ProxiesTabView({super.key});
@@ -272,7 +272,7 @@ class ProxiesTabViewState extends ConsumerState<ProxiesTabView>
                 ProxyGroupView(
                   key: _keyMap.updateCacheValue(
                     group.name,
-                    () => GlobalKey<_ProxyGroupViewState>(),
+                    () => GlobalKey<ProxyGroupViewState>(),
                   ),
                   group: group,
                   columns: state.columns,
@@ -299,10 +299,10 @@ class ProxyGroupView extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ProxyGroupView> createState() => _ProxyGroupViewState();
+  ConsumerState<ProxyGroupView> createState() => ProxyGroupViewState();
 }
 
-class _ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
+class ProxyGroupViewState extends ConsumerState<ProxyGroupView> {
   late final ScrollController _controller;
   int _columns = 2;
 

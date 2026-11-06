@@ -4,6 +4,7 @@ import 'package:fl_clash/controller.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/providers/global_nodes.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/proxies/common.dart';
 import 'package:fl_clash/views/proxies/selection_scope.dart';
@@ -319,9 +320,14 @@ class ProxyCard extends StatelessWidget {
       children: [
         Consumer(
           builder: (_, ref, child) {
-            final selectedProxyName = ref.watch(
+            var selectedProxyName = ref.watch(
               getSelectedProxyNameProvider(groupName),
             );
+            if (groupName == 'GLOBAL' &&
+                ref.watch(patchClashConfigProvider).mode == Mode.global) {
+              final global = ref.watch(globalNodeStateProvider);
+              selectedProxyName = global.pending ?? global.confirmed;
+            }
             return CommonCard(
               key: key,
               onPressed: () {
