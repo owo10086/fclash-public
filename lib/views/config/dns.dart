@@ -234,10 +234,14 @@ class FakeIpFilterModeItem extends ConsumerWidget {
     final fakeIpFilterMode = ref.watch(
       patchClashConfigProvider.select((state) => state.dns.fakeIpFilterMode),
     );
-    const modes = ['blacklist', 'whitelist'];
+    final modeLabels = {
+      'blacklist': appLocalizations.blacklistMode,
+      'whitelist': appLocalizations.whitelistMode,
+    };
+    final modes = modeLabels.keys.toList();
     return ListItem<String>.options(
       title: Text(appLocalizations.fakeipFilterMode),
-      subtitle: Text(fakeIpFilterMode),
+      subtitle: Text(modeLabels[fakeIpFilterMode] ?? fakeIpFilterMode),
       delegate: OptionsDelegate(
         title: appLocalizations.fakeipFilterMode,
         options: modes,
@@ -249,7 +253,7 @@ class FakeIpFilterModeItem extends ConsumerWidget {
               .read(patchClashConfigProvider.notifier)
               .update((state) => state.copyWith.dns(fakeIpFilterMode: value));
         },
-        textBuilder: (mode) => mode,
+        textBuilder: (mode) => modeLabels[mode]!,
         value: modes.contains(fakeIpFilterMode)
             ? fakeIpFilterMode
             : modes.first,

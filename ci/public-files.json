@@ -111,7 +111,7 @@
     },
     {
       "path": "lib/views/config/dns.dart",
-      "sha256": "d45ec2f6526e80e29ef389559bfa7df53855ee4cbb378d6a29e146e5938bd7ba"
+      "sha256": "d2e60ac0697f1deffe388597dcb932d2a3600cbbb6c922fa8bb6b4072ae166be"
     },
     {
       "path": "lib/views/config/general.dart",
@@ -155,7 +155,7 @@
     },
     {
       "path": "lib/views/proxies/card.dart",
-      "sha256": "d352872710861fc9344d28b65287a660ee8b98241544a03d21585bb5f674163b"
+      "sha256": "3c40888a925da1d6e83049474bdb957bfca5b6790cc33f2155620e5d931814ce"
     },
     {
       "path": "lib/views/proxies/list.dart",
@@ -307,7 +307,7 @@
     },
     {
       "path": "pubspec.yaml",
-      "sha256": "0906fc33902e4eb1f68237c9f293a52d66c7038a490a84629d220414c170dde4"
+      "sha256": "35425b0d04738d0331aad955578d4c988adc697b5bfde0d9cfb708e2c5a258f0"
     }
   ]
 }
